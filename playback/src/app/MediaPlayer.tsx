@@ -201,6 +201,13 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ src }) => {
       setIsScrubbing(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+
+      // Automatically play if the player is being hovered
+      if (isHoveringPlayer) {
+        videoElement.play().catch(error => {
+          console.error('Error playing video after scrubbing:', error);
+        });
+      }
     };
 
     updateTime(e.clientX);
@@ -249,7 +256,7 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ src }) => {
       {/* Controls */}
       <div className="bg-gray-800 p-4">
         {/* Scrub Bar */}
-        <div 
+        <div
           ref={scrubBarRef}
           className="relative w-full h-2 bg-gray-700 rounded-full cursor-pointer mb-2"
           onMouseMove={handleScrubBarMouseMove}
@@ -259,7 +266,7 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ src }) => {
           {/* Sprite Preview */}
           {isHoveringScrubBar && previewFrame && (
             <>
-              <div 
+              <div
                 className="absolute bottom-full left-0 z-10"
                 style={{
                   left: `${previewPosition - 50}px`, // Center the preview
@@ -272,7 +279,7 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ src }) => {
                   backgroundRepeat: 'no-repeat'
                 }}
               />
-              <div 
+              <div
                 className="absolute bottom-full left-0 z-10 text-white text-xs text-center w-[100px]"
                 style={{
                   left: `${previewPosition - 50}px`, // Center the time label
@@ -284,23 +291,25 @@ const MediaPlayer: React.FC<MediaPlayerProps> = ({ src }) => {
             </>
           )}
 
-          {/* Progress Bar */}
-          <div 
-            className="absolute top-0 left-0 h-full bg-red-600 rounded-full" 
-            style={{ 
-              width: `${(currentTime / duration) * 100}%` 
-            }} 
-          />
-
-          {/* Hover Progress Bar */}
+          {/* Hover Progress Bar - Now rendered BEFORE the red progress bar */}
           {isHoveringScrubBar && (
-            <div 
-              className="absolute top-0 left-0 h-full bg-gray-500 rounded-full" 
-              style={{ 
-                width: `${hoverProgress * 100}%` 
-              }} 
+            <div
+              className="absolute top-0 left-0 h-full bg-gray-500 rounded-full"
+              style={{
+                width: `${hoverProgress * 100}%`,
+                zIndex: 1 // Ensure it's under the red bar
+              }}
             />
           )}
+
+          {/* Progress Bar */}
+          <div
+            className="absolute top-0 left-0 h-full bg-red-600 rounded-full"
+            style={{
+              width: `${(currentTime / duration) * 100}%`,
+              zIndex: 2 // Ensure it's on top of the grey bar
+            }}
+          />
         </div>
 
         {/* Control Bar */}
